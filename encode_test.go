@@ -71,6 +71,67 @@ func TestOmitEmpty(t *testing.T) {
 	}
 }
 
+type EncOptionals struct {
+	Sr string `json:"sr"`
+	So string `json:"so,omitemptyenc"`
+	Sw string `json:"-"`
+
+	S2r string `json:"s2r"`
+	S2o string `json:"s2o,omitemptyenc,omitemptydec"`
+	S2w string `json:"-"`
+	S2d string `json:"s2d,omitemptydec"` // the same as absent omitempty for encoding, but not decoding
+
+	Ir int `json:"omitemptyenc"` // actually named omitemptyenc, not an option
+	Io int `json:"io,omitemptyenc"`
+
+	Slr []string `json:"slr,random"`
+	Slo []string `json:"slo,omitemptyenc"`
+
+	Mr map[string]any `json:"mr"`
+	Mo map[string]any `json:",omitemptyenc"`
+
+	Fr float64 `json:"fr"`
+	Fo float64 `json:"fo,omitemptyenc"`
+
+	Br bool `json:"br"`
+	Bo bool `json:"bo,omitemptyenc"`
+
+	Ur uint `json:"ur"`
+	Uo uint `json:"uo,omitemptyenc"`
+
+	Str struct{} `json:"str"`
+	Sto struct{} `json:"sto,omitemptyenc"`
+}
+
+var encOptionalsExpected = `{
+ "sr": "",
+ "s2r": "",
+ "s2d": "",
+ "omitemptyenc": 0,
+ "slr": null,
+ "mr": {},
+ "fr": 0,
+ "br": false,
+ "ur": 0,
+ "str": {},
+ "sto": {}
+}`
+
+func TestOmitEmptyEnc(t *testing.T) {
+	var o EncOptionals
+	o.Sw = "something"
+	o.Mr = map[string]any{}
+	o.Mo = map[string]any{}
+
+	got, err := MarshalIndent(&o, "", " ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(got); got != encOptionalsExpected {
+		t.Errorf(" got: %s\nwant: %s\n", got, encOptionalsExpected)
+	}
+}
+
 type StringTag struct {
 	BoolStr    bool    `json:",string"`
 	IntStr     int64   `json:",string"`

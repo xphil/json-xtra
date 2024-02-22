@@ -190,6 +190,13 @@ type Embed0a struct {
 	Level1f int `json:"x"` // annihilated by Embed0's Level1e
 }
 
+type OmitemptyDec struct {
+	Sr string `json:"sr"`
+	// omitemptyenc will work for encoding only, and in case of decoding can be treated as a absense of omitempty option
+	Srr string `json:"srr,omitemptyenc"`
+	So  string `json:"so,omitemptydec"` // omitemptydec will work for decoding only
+}
+
 type Embed0b Embed0
 
 type Embed0c Embed0
@@ -577,6 +584,19 @@ var unmarshalTests = []unmarshalTest{
 	{in: `{"x:y":true}`, ptr: new(map[unmarshalerText]bool), out: ummapXY},
 	// If multiple values for the same key exists, only the most recent value is used.
 	{in: `{"x:y":false,"x:y":true}`, ptr: new(map[unmarshalerText]bool), out: ummapXY},
+
+	{
+		in: `{
+            "Sr": "Sr",
+            "Srr": "Srr"
+        }`,
+		ptr: new(OmitemptyDec),
+		out: OmitemptyDec{
+			Sr:  "Sr",
+			Srr: "Srr",
+			So:  "",
+		},
+	},
 
 	{
 		in: `{

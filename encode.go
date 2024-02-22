@@ -692,7 +692,7 @@ FieldLoop:
 			fv = fv.Field(i)
 		}
 
-		if f.omitEmpty && isEmptyValue(fv) {
+		if f.omitEmptyEnc && isEmptyValue(fv) {
 			continue
 		}
 		e.WriteByte(next)
@@ -1036,11 +1036,12 @@ type field struct {
 	nameNonEsc  string // `"` + name + `":`
 	nameEscHTML string // `"` + HTMLEscape(name) + `":`
 
-	tag       bool
-	index     []int
-	typ       reflect.Type
-	omitEmpty bool
-	quoted    bool
+	tag          bool
+	index        []int
+	typ          reflect.Type
+	omitEmptyEnc bool
+	omitEmptyDec bool
+	quoted       bool
 
 	encoder encoderFunc
 }
@@ -1150,12 +1151,18 @@ func typeFields(t reflect.Type) structFields {
 						name = sf.Name
 					}
 					field := field{
-						name:      name,
-						tag:       tagged,
-						index:     index,
-						typ:       ft,
-						omitEmpty: opts.Contains("omitempty"),
-						quoted:    quoted,
+						name:         name,
+						tag:          tagged,
+						index:        index,
+						typ:          ft,
+						omitEmptyEnc: opts.Contains("omitemptyenc"),
+						omitEmptyDec: opts.Contains("omitemptydec"),
+						quoted:       quoted,
+					}
+					// Omitempty overrides both, omitemptyenc and omitemptydec
+					if opts.Contains("omitempty") {
+						field.omitEmptyEnc = true
+						field.omitEmptyDec = true
 					}
 					field.nameBytes = []byte(field.name)
 
